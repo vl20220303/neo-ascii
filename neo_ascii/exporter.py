@@ -18,6 +18,11 @@ from neo_ascii.image_assembler import assemble_masks
 import imageio
 
 def image_to_image(input_path, output_path, pipeline, ascii_mask, effect_mask):
+    """
+    pipeline is expected to be a function with params (image, ascii_mask, effect_mask).
+    ascii_mask is expected to be a single mask (2D).
+    effect_mask is expected to be a series of masks (3D).
+    """
     image = cv2.imread(str(input_path))
     output = pipeline(image, ascii_mask, effect_mask[0] if effect_mask is not None else None)
     print("Writing image...")
@@ -25,6 +30,11 @@ def image_to_image(input_path, output_path, pipeline, ascii_mask, effect_mask):
     print(f"Finished writing image to {output_path}")
 
 def image_to_video(input_path, output_path, pipeline, ascii_mask, effect_mask):
+    """
+    pipeline is expected to be a function with params (image, ascii_mask, effect_mask).
+    ascii_mask is expected to be a single mask (2D).
+    effect_mask is expected to be a series of masks (3D).
+    """
     image = cv2.imread(str(input_path))
     frames = []
     for single_effect_mask in effect_mask:
@@ -35,6 +45,11 @@ def image_to_video(input_path, output_path, pipeline, ascii_mask, effect_mask):
     print(f"Finished writing GIF to {output_path}")
 
 def video_to_video(input_path, output_path, pipeline, ascii_mask, effect_mask):
+    """
+    pipeline is expected to be a function with params (image, ascii_mask, effect_mask).
+    ascii_mask is expected to be a single mask (2D).
+    effect_mask is expected to be a series of masks (3D).
+    """
     cap = cv2.VideoCapture(str(input_path))
     frames = []
 

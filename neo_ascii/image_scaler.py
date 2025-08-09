@@ -4,6 +4,14 @@ import os
 from pathlib import Path
 
 def scale_image(image=None, image_path=None, new_size=(100, 100), fit_type='crop', crop_offset=0, output_path=None, gen_output_path = True):
+    """
+    Generates a scaled image for a given image or image path.
+    new_size is the new dimensions of the image.
+    fit_type is the fitment type
+        Includes 'crop', 'contain', 'cover'
+    crop_offset is the offset from left used in crop mode
+    gen_output_path automatically creates an output file in the same directory as the input file.
+    """
     if image is None:
         image = cv2.imread(image_path)
         if image is None:

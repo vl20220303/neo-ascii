@@ -4,6 +4,11 @@ import numpy as np
 from neo_ascii.image_helpers import get_dims, get_image
 
 def generate_ascii_mask(image_dims=None, image=None, image_path=None, chars=None):
+    """
+    Generates an array of characters for a given image dimension, image, or image path.
+    chars is the character array to choose from (at random).
+        If None is provided, the default ($,#,&,%,+,-,0-10,a-z,A-Z) is used.
+    """
     if chars is None:
         chars = []
         chars += ['$', '#', '&', '%', '+', '-'] * 10
@@ -18,6 +23,13 @@ def generate_ascii_mask(image_dims=None, image=None, image_path=None, chars=None
     
     
 def generate_rain_mask(image_dims=None, image=None, image_path=None, density=0.5, drop_height=0.8, cycle=None):
+    """
+    Generates a raining effect mask for a given image dimension, image, or image path.
+    density is the rough proportion of the screen that will be covered at a single moment.
+    drop_height is the height of the raindrop.
+    cycle is the number of frames to be generated, which is expected to be larger than the image height to create a loopable animation.
+        If None is provided, the image height will be used.
+    """
    
     height, width = get_dims(image_dims, image, image_path)
 
@@ -58,6 +70,15 @@ def generate_rain_mask(image_dims=None, image=None, image_path=None, density=0.5
 
     
 def generate_pulsing_mask(image_dims=None, image = None, image_path=None, density=0.5, effect_type='pulse', cycle=None, background=0.3):
+    """
+    Generates a pulsing effect mask for a given image dimension, image, or image path.
+    density is the rough proportion of the screen that will be covered at a single moment.
+    effect_type is the name of the effect to be applied.
+        Includes 'pulse', 'raindrop', 'beacon'.
+    cycle is the number of frames to be generated, which is expected to be larger than the image height to create a loopable animation.
+        If None is provided, the image height will be used.
+    background is the background brightness of the pixels.
+    """
 
     height, width = get_dims(image_dims, image, image_path)
 
@@ -74,7 +95,7 @@ def generate_pulsing_mask(image_dims=None, image = None, image_path=None, densit
     for _ in range(num_drops_col):
         h = np.random.randint(0, height)
         w = np.random.randint(0, width)
-        size = np.random.randint(1, height / 5)
+        size = np.random.randint(1, height / 4)
         time = np.random.randint(0, int(cycle - size))
         drop_coords_temporal.append((h, w, size, time))
 
@@ -112,6 +133,14 @@ def generate_pulsing_mask(image_dims=None, image = None, image_path=None, densit
     
 
 def generate_threshold_mask(image=None, image_path=None, format='hsv', include=[(0, 100), (80, 20), (50, 100)], activation='const', output_path=None):
+    """
+    Generates a threshold mask for a given image or image path.
+        Pixels must conform to one of 3 criteria to remain.
+    format is the format of the criteria.
+    include is the selection criteria, and includes 3 tuples (1 for each channel), each containing an upper and lower bound that wraps around.
+    activation is the activation method of the mask.
+        Includes 'const', 'linear', '2-sided-linear'
+    """
     image = get_image(image, image_path, format)
 
     if activation not in {'const', 'linear', '2-sided-linear'}:
@@ -147,6 +176,11 @@ def generate_threshold_mask(image=None, image_path=None, format='hsv', include=[
     
 
 def generate_color_mask(image=None, image_path=None, format='rgb', map=[(0,255,0), (0,0,255), (255,255,0)], output_path=None):
+    """
+    Generates a color shifted image for a given image or image path.
+    format is the format of the shift map.
+    map is the color shifting map, and includes 3 tuples (1 for each channel), each representing the color to be added for that channel.
+    """
     image = get_image(image, image_path, format)
 
     image = image.astype(np.float32)

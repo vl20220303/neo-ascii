@@ -36,25 +36,46 @@ def get_image(image, image_path, format):
     return image
 
 def mask_to_image(mask):
+    """
+    Takes in a mask, converts it from 0-1 range to 0-255, and duplicates it across 3 channels to create an RGB image.
+    Returns the image.
+    """
     image = (mask * 255).astype(np.uint8) # scale to 0–255
     image = np.stack([image]*3, axis=-1)
     return image
 
 def ascii_scaled(image):
+    """
+    Takes in an image and scales it to account for character aspect ratio.
+    Returns the image.
+    """
     height, width = image.shape[:2]
     image = scale_image(image=image, new_size=(int(height/1.1), width), fit_type='cover')
     return image
 
 def ascii_scaled_dims(height, width):
+    """
+    Takes in dimensions and scales it to account for character aspect ratio.
+    Returns the dimensions.
+    """
     return (int(height/1.1), width)
 
 def oversaturate(image):
+    """
+    Takes in an image and sets the saturation to max.
+    Returns the image.
+    """
     hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     hsv_image[:, :, 1] = 255
     image = cv2.cvtColor(hsv_image, cv2.COLOR_HSV2BGR)
     return image
 
 def brighten(image, amt=None):
+    """
+    Takes in an image and adds {amt} to brightness.
+        If amt is None, brightness of all pixels is set to max.
+    Returns the image.
+    """
     hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     if amt is None:
         hsv_image[:, :, 2] = 255
@@ -65,7 +86,13 @@ def brighten(image, amt=None):
     return image
 
 def greyscale(image):
+    """
+    Takes in an image and returns the greyscaled version.
+    """
     return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY).astype(float) / 255
 
 def extension_type(filepath):
+    """
+    Returns the extension type of the file provided.
+    """
     return os.path.splitext(filepath)[1].lower()
