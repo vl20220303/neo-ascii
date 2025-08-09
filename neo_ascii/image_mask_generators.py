@@ -1,0 +1,173 @@
+import cv2
+import numpy as np
+
+from neo_ascii.image_helpers import get_dims, get_image
+
+def generate_ascii_mask(image_dims=None, image=None, image_path=None, chars=None):
+    if chars is None:
+        chars = []
+        chars += ['$', '#', '&', '%', '+', '-'] * 10
+        chars += [str(i) for i in range(0, 10)] * 10
+        chars += [chr(i) for i in range(ord('a'), ord('z'))] 
+        chars += [chr(i) for i in range(ord('A'), ord('Z'))]
+
+    dims = get_dims(image_dims, image, image_path)
+    
+    mask = np.random.default_rng().choice(chars, size=dims, replace=True)
+    return mask
+    
+    
+def generate_rain_mask(image_dims=None, image=None, image_path=None, density=0.5, drop_height=0.8, cycle=None):
+   
+    height, width = get_dims(image_dims, image, image_path)
+
+    if cycle is None:
+        cycle = 2*height
+    elif cycle <= height:
+        raise ValueError("Cycle length must be greater than screen height!")
+    
+    drop = np.ones(int(height*drop_height))
+    drop_tail_height = int(height*drop_height*0.2)
+    drop_tail = np.linspace(0, 1 - 1/drop_tail_height, drop_tail_height)
+    drop[:drop_tail_height] = drop_tail
+    drop_len = len(drop)
+    
+    repeat_length = int(1.5*height)
+
+    mask = np.zeros((cycle+repeat_length, width))
+
+    num_drops = int (cycle * density)
+    drop_coords = [(np.random.randint(height+drop_len, cycle+repeat_length), np.random.randint(0, width)) for _ in range(num_drops)]
+
+    for x, y in drop_coords:
+        if x - drop_len >= height:
+            mask[x - drop_len:x, y] += drop
+
+    repeat = mask[-repeat_length:, :]
+    mask[:repeat_length, :] += repeat
+
+    np.clip(mask, 0, 1, out=mask)
+
+    final_mask = np.zeros((cycle, height, width))
+    for i in range(cycle):
+        start = cycle - i
+        end = start + height
+        final_mask[i] = mask[start:end, :]
+        
+    return final_mask
+
+    
+def generate_pulsing_mask(image_dims=None, image = None, image_path=None, density=0.5, effect_type='pulse', cycle=None, background=0.3):
+
+    height, width = get_dims(image_dims, image, image_path)
+
+    if cycle is None:
+        cycle = 2*height
+    elif cycle <= height:
+        raise ValueError("Cycle length must be greater than screen height!")
+    
+    if effect_type not in {'pulse', 'raindrop', 'beacon'}:
+        raise ValueError("Effect must be one of 'pulse', 'raindrop', or 'beacon'!")
+    
+    num_drops_col = int (cycle * density)
+    drop_coords_temporal = []
+    for _ in range(num_drops_col):
+        h = np.random.randint(0, height)
+        w = np.random.randint(0, width)
+        size = np.random.randint(1, height / 5)
+        time = np.random.randint(0, int(cycle - size))
+        drop_coords_temporal.append((h, w, size, time))
+
+    mask = np.zeros((width, cycle, height))
+    mask.fill(background)
+
+    for h, w, size, time in drop_coords_temporal:
+        pulse_min = np.array([(max(0, 1 - (i - size/2)**2))**0.5 for i in range(size)])
+        
+        subsize = size
+        if effect_type == 'pulse':
+            subsize*=0.5
+        elif effect_type == 'raindrop':
+            subsize*=0.1
+        elif effect_type == 'beacon':
+            subsize*=0.8
+        subsize = int(subsize)
+
+        pulse_increase = np.append(np.linspace(0, 1, subsize), np.linspace(1, 0, size-subsize))
+        pulse = pulse_min + pulse_increase[:, np.newaxis]
+        h_start = max(0, h - size // 2)
+        h_end = min(mask.shape[2], h + size // 2)
+        t_start = max(0, time)
+        t_end = min(mask.shape[1], time + size)
+
+        pulse_cropped = pulse[:t_end - t_start, :h_end - h_start]
+
+        mask[w, t_start:t_end, h_start:h_end] += pulse_cropped
+
+    np.clip(mask, 0, 1, out=mask)
+
+    final_mask = mask.transpose(1, 2, 0)
+
+    return final_mask
+    
+
+def generate_threshold_mask(image=None, image_path=None, format='hsv', include=[(0, 100), (80, 20), (50, 100)], activation='const', output_path=None):
+    image = get_image(image, image_path, format)
+
+    if activation not in {'const', 'linear', '2-sided-linear'}:
+        raise ValueError("Activation must be 'const', 'linear', or '2-sided-linear'")
+
+    mask = np.ones(image.shape[:2])
+
+    for i, (low, high) in enumerate(include):
+        channel = image[:, :, i]
+        if low <= high:
+            valid = (channel >= low) & (channel <= high)
+        else:
+            valid = (channel >= low) | (channel <= high)
+
+        mask *= valid
+
+        if activation == 'linear':
+            norm = (channel - low) / (high - low)
+            norm = np.clip(norm*2, 0.5, 1)
+            mask *= norm
+
+        elif activation == '2-sided-linear':
+            norm = (channel - low - (high-low)/2) / (high - low)
+            mask *= norm
+
+    if activation == 'const':
+        mask = (mask > 0)
+
+    if output_path:
+        cv2.imwrite(output_path, (mask * 255).astype(np.uint8))
+
+    return mask
+    
+
+def generate_color_mask(image=None, image_path=None, format='rgb', map=[(0,255,0), (0,0,255), (255,255,0)], output_path=None):
+    image = get_image(image, image_path, format)
+
+    image = image.astype(np.float32)
+    h, w, _ = image.shape
+    mapped_image = np.zeros((h, w, 3))
+
+    for i in range(3):
+        for j in range(3):
+            mapped_image[:, :, j] += image[:, :, i] * (map[i][j] / 255.0)
+
+    mapped_image = np.clip(mapped_image, 0, 255)
+
+    if output_path:
+        if format == 'rgb':
+            cv2.imwrite(output_path, cv2.cvtColor(mapped_image.astype(np.uint8), cv2.COLOR_RGB2BGR))
+        else:
+            cv2.imwrite(output_path, cv2.cvtColor(mapped_image.astype(np.uint8), cv2.COLOR_HSV2BGR))
+
+    if format == 'rgb':
+        mapped_image = cv2.cvtColor(mapped_image.astype(np.uint8), cv2.COLOR_RGB2BGR)
+    else:
+        mapped_image = cv2.cvtColor(mapped_image.astype(np.uint8), cv2.COLOR_HSV2BGR)
+        
+    return mapped_image
