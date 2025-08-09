@@ -11,7 +11,7 @@ from neo_ascii.image_mask_generators import (
     generate_color_mask
 )
 from neo_ascii.image_scaler import scale_image
-from neo_ascii.image_helpers import mask_to_image, ascii_scaled, oversaturate
+from neo_ascii.image_helpers import mask_to_image, ascii_scaled, oversaturate, brighten
 
 def assemble_masks(ascii_mask=None, color_mask=None, effect_mask=None, activation_mask=None, output_path=None, params=None, use_ascii_activation=None):
 
@@ -48,22 +48,23 @@ def assemble_masks(ascii_mask=None, color_mask=None, effect_mask=None, activatio
     for i in range(height):
         for j in range(width):
 
-
-            color = color_mask[i, j] if color_mask is not None else np.array((255, 255, 255))
+            orig_color = color_mask[i, j] if color_mask is not None else np.array((255, 255, 255))
             effect = effect_mask[i, j] if effect_mask is not None else 1
             activation = activation_mask[i, j] if activation_mask is not None else 1
-            
-            color = color.astype(float)
+
+            color = orig_color.astype(float)
             color*=effect*activation
-            color = tuple(int(c) for c in color)
 
             if ascii_mask is not None:
-                char = ascii_mask[i, j] 
+                char = ascii_mask[i, j]
             elif use_ascii_activation is not None:
                 final_activation = np.sum(color) / (3*255)
-                char = ascii_activation.get(use_ascii_activation, ascii_activation.get('default'))[min(int(final_activation*10), 9)]
+                char = ascii_activation.get(use_ascii_activation, ascii_activation.get('default'))[9 - min(int(final_activation*10), 9)]
+                color = orig_color
             else:
                 char = '█'
+                
+            color = tuple(int(c) for c in color)
 
             x = j * char_spacing
             y = (i + 1) * line_spacing  # OpenCV anchors text at baseline

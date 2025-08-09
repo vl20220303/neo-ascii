@@ -50,12 +50,22 @@ def ascii_scaled_dims(height, width):
 
 def oversaturate(image):
     hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-
-    hsv_image[:, :, 1] = 255  # Maximize Saturation
-    hsv_image[:, :, 2] = 255  # Maximize Brightness (Value)
-
+    hsv_image[:, :, 1] = 255
     image = cv2.cvtColor(hsv_image, cv2.COLOR_HSV2BGR)
     return image
+
+def brighten(image, amt=None):
+    hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    if amt is None:
+        hsv_image[:, :, 2] = 255
+    else:
+        hsv_image[:, :, 2]+=amt
+        np.clip(hsv_image[:, :, 2], 0, 255)
+    image = cv2.cvtColor(hsv_image, cv2.COLOR_HSV2BGR)
+    return image
+
+def greyscale(image):
+    return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY).astype(float) / 255
 
 def extension_type(filepath):
     return os.path.splitext(filepath)[1].lower()

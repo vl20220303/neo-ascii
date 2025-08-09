@@ -19,7 +19,7 @@ import imageio
 
 def image_to_image(input_path, output_path, pipeline, ascii_mask, effect_mask):
     image = cv2.imread(str(input_path))
-    output = pipeline(image, ascii_mask, effect_mask[0])
+    output = pipeline(image, ascii_mask, effect_mask[0] if effect_mask is not None else None)
     print("Writing image...")
     cv2.imwrite(str(output_path), output)
     print(f"Finished writing image to {output_path}")
