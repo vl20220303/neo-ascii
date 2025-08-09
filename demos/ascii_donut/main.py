@@ -17,7 +17,7 @@ from neo_ascii.exporter import image_to_image, image_to_video, video_to_video
 
 dir_path = Path(os.path.dirname(os.path.abspath(__file__)))
 
-dimensions = (40, 40)
+dimensions = (80, 80)
 input_path = dir_path / 'input.png'
 output_path = dir_path / 'output.png'
 
@@ -36,8 +36,9 @@ def pipeline(image, ascii_mask, effect_mask):
     image = scale_image(image=image, new_size=dimensions)
     image = ascii_scaled(image)
     activation_mask = greyscale(image)
-    color_mask = generate_color_mask(image=brighten(image), map=[(255, 255, 255), (255, 255, 255), (255, 255, 255)])
-    return assemble_masks(color_mask=color_mask, activation_mask=activation_mask, use_ascii_activation="default")
+    color_mask = generate_color_mask(image=brighten(image), map=[(255, 0, 0), (0, 255, 0), (0, 0, 255)])
+    activation_color = (100, 200, 255)
+    return assemble_masks(color_mask=color_mask, activation_mask=activation_mask, use_ascii_activation="block", activation_color=activation_color)
 
 if __name__ == '__main__':
     main()

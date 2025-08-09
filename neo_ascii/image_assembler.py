@@ -13,7 +13,7 @@ from neo_ascii.image_mask_generators import (
 from neo_ascii.image_scaler import scale_image
 from neo_ascii.image_helpers import mask_to_image, ascii_scaled, oversaturate, brighten
 
-def assemble_masks(ascii_mask=None, color_mask=None, effect_mask=None, activation_mask=None, output_path=None, params=None, use_ascii_activation=None):
+def assemble_masks(ascii_mask=None, color_mask=None, effect_mask=None, activation_mask=None, output_path=None, params=None, use_ascii_activation=None, activation_color=None):
 
     # defaults
     font = cv2.FONT_HERSHEY_SIMPLEX
@@ -60,7 +60,10 @@ def assemble_masks(ascii_mask=None, color_mask=None, effect_mask=None, activatio
             elif use_ascii_activation is not None:
                 final_activation = np.sum(color) / (3*255)
                 char = ascii_activation.get(use_ascii_activation, ascii_activation.get('default'))[9 - min(int(final_activation*10), 9)]
-                color = orig_color
+                if activation_color is not None:
+                    color = activation_color
+                else:
+                    color = orig_color
             else:
                 char = '█'
                 
