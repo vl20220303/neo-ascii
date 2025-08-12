@@ -33,7 +33,7 @@ def assemble_masks(ascii_mask=None, color_mask=None, effect_mask=None, activatio
     """
 
     # defaults
-    font = cv2.FONT_HERSHEY_COMPLEX
+    font = cv2.FONT_HERSHEY_SIMPLEX
     font_scale = 0.4
     thickness = 1
     char_spacing = 12
