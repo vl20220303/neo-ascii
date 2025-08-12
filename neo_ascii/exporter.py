@@ -15,6 +15,8 @@ from neo_ascii.image_helpers import ascii_scaled_dims, mask_to_image, ascii_scal
 
 from neo_ascii.image_assembler import assemble_masks
 
+from neo_ascii.image_helpers import extension_type
+
 import imageio
 
 def image_to_image(input_path, output_path, pipeline, ascii_mask, effect_mask):
@@ -29,7 +31,7 @@ def image_to_image(input_path, output_path, pipeline, ascii_mask, effect_mask):
     cv2.imwrite(str(output_path), output)
     print(f"Finished writing image to {output_path}")
 
-def image_to_video(input_path, output_path, pipeline, ascii_mask, effect_mask):
+def image_to_video(input_path, output_path, pipeline, ascii_mask, effect_mask, duration=0.05):
     """
     pipeline is expected to be a function with params (image, ascii_mask, effect_mask).
     ascii_mask is expected to be a single mask (2D).
@@ -40,11 +42,24 @@ def image_to_video(input_path, output_path, pipeline, ascii_mask, effect_mask):
     for single_effect_mask in effect_mask:
         output = pipeline(image, ascii_mask, single_effect_mask)
         frames.append(output)
-    print("Writing GIF...")
-    imageio.mimsave(str(output_path), frames, format='GIF', duration=0.05)
-    print(f"Finished writing GIF to {output_path}")
 
-def video_to_video(input_path, output_path, pipeline, ascii_mask, effect_mask):
+    ext = extension_type(output_path)
+    print(f"Writing {ext}...")
+    if ext == '.gif':
+        frames = [cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) for frame in frames]
+        imageio.mimsave(str(output_path), frames, format='GIF', duration=duration, loop=0)
+    elif ext == '.mp4':
+        height, width = frames[0].shape[:2]
+        fourcc = cv2.VideoWriter_fourcc(*'avc1')
+        out = cv2.VideoWriter(str(output_path), fourcc, 1/duration, (width, height))
+
+        for frame in frames:
+            out.write(frame.astype(np.uint8))
+
+        out.release()
+    print(f"Finished writing {ext} to {output_path}")
+
+def video_to_video(input_path, output_path, pipeline, ascii_mask, effect_mask, duration=0.05):
     """
     pipeline is expected to be a function with params (image, ascii_mask, effect_mask).
     ascii_mask is expected to be a single mask (2D).
@@ -53,13 +68,14 @@ def video_to_video(input_path, output_path, pipeline, ascii_mask, effect_mask):
     cap = cv2.VideoCapture(str(input_path))
     frames = []
 
+
     frame_idx = 0
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
             break
 
-        effect = effect_mask[frame_idx%len(effect_mask)]
+        effect = effect_mask[frame_idx%len(effect_mask)] if effect_mask is not None else None
         ascii = ascii_mask
 
         output = pipeline(frame, ascii, effect)
@@ -67,9 +83,22 @@ def video_to_video(input_path, output_path, pipeline, ascii_mask, effect_mask):
         frame_idx += 1
 
     cap.release()
-    print("Writing GIF...")
-    imageio.mimsave(str(output_path), frames, format='GIF', duration=0.05)
-    print(f"Finished writing GIF to {output_path}")
+    
+    ext = extension_type(output_path)
+    print(f"Writing {ext}...")
+    if ext == '.gif':
+        frames = [cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) for frame in frames]
+        imageio.mimsave(str(output_path), frames, format='GIF', duration=duration, loop=0)
+    elif ext == '.mp4':
+        height, width = frames[0].shape[:2]
+        fourcc = cv2.VideoWriter_fourcc(*'avc1')
+        out = cv2.VideoWriter(str(output_path), fourcc, 1/duration, (width, height))
+
+        for frame in frames:
+            out.write(frame.astype(np.uint8))
+
+        out.release()
+    print(f"Finished writing {ext} to {output_path}")
 
 
 def main():

@@ -28,12 +28,12 @@ def assemble_masks(ascii_mask=None, color_mask=None, effect_mask=None, activatio
     use_ascii_activation is the brightness characters, when ascii_mask is None and an activation type is provided.
         Includes 'default', 'block', 'minimalist', 'contrast'.
         If None is provided, and ascii_mask is not provided, pixel blocks are used with color_mask.
-    activation_color is the color of the brightness characters, in BGR format.
+    activation_color is the color of the brightness characters, in RGB format.
         If None is provided, the color_mask is used.
     """
 
     # defaults
-    font = cv2.FONT_HERSHEY_SIMPLEX
+    font = cv2.FONT_HERSHEY_COMPLEX
     font_scale = 0.4
     thickness = 1
     char_spacing = 12
@@ -62,27 +62,38 @@ def assemble_masks(ascii_mask=None, color_mask=None, effect_mask=None, activatio
 
     canvas = np.zeros((img_height, img_width, 3), dtype=np.uint8) * 255
 
+    # handling missing color/effect/activations
+    color_mask = color_mask if color_mask is not None else np.full((height, width, 3), np.array([255, 255, 255]), dtype=np.uint8)
+    effect_mask = effect_mask if effect_mask is not None else np.ones((height, width), dtype=np.float64)
+    activation_mask = activation_mask if activation_mask is not None else np.ones((height, width), dtype=np.float64)
+
+    # layering masks together (vectorized)
+    full_mask = color_mask.astype(np.float64)
+    full_mask *= effect_mask[:, :, np.newaxis]
+    full_mask *= activation_mask[:, :, np.newaxis]
+    full_mask = np.clip(full_mask, 0, 255).astype(np.uint8)
+
+    # handling ascii (vectorized)
+    if ascii_mask is None:
+        if use_ascii_activation is not None:
+            scale_factor = 10 / (3 * 255)
+            activation_values = scale_factor * np.sum(full_mask, axis=2)
+            activation_indices = 9 - np.clip(activation_values.astype(int), 0, 9)
+            
+            ascii_arr = ascii_activation.get(use_ascii_activation, ascii_activation.get('default'))
+            ascii_mask = np.array([ascii_arr[i] for i in activation_indices.flatten()]).reshape(height, width)
+            if activation_color is not None:
+                full_mask[:, :] = activation_color[::-1]
+            else:
+                full_mask = color_mask
+        else:
+            ascii_mask = np.full((height, width), '█', dtype='U20')
+
     for i in range(height):
         for j in range(width):
 
-            orig_color = color_mask[i, j] if color_mask is not None else np.array((255, 255, 255))
-            effect = effect_mask[i, j] if effect_mask is not None else 1
-            activation = activation_mask[i, j] if activation_mask is not None else 1
-
-            color = orig_color.astype(float)
-            color*=effect*activation
-
-            if ascii_mask is not None:
-                char = ascii_mask[i, j]
-            elif use_ascii_activation is not None:
-                final_activation = np.sum(color) / (3*255)
-                char = ascii_activation.get(use_ascii_activation, ascii_activation.get('default'))[9 - min(int(final_activation*10), 9)]
-                if activation_color is not None:
-                    color = activation_color
-                else:
-                    color = orig_color
-            else:
-                char = '█'
+            color = full_mask[i, j]
+            char = ascii_mask[i, j]
                 
             color = tuple(int(c) for c in color)
 

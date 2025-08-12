@@ -44,29 +44,43 @@ def mask_to_image(mask):
     image = np.stack([image]*3, axis=-1)
     return image
 
-def ascii_scaled(image):
+def ascii_scaled(image, params=None):
     """
     Takes in an image and scales it to account for character aspect ratio.
     Returns the image.
     """
     height, width = image.shape[:2]
-    image = scale_image(image=image, new_size=(int(height/1.1), width), fit_type='cover')
+
+    scale_factor = 14/12
+    if not params is None:
+        font, font_scale, thickness, char_spacing, line_spacing = params
+        scale_factor = line_spacing/char_spacing
+    
+    image = scale_image(image=image, new_size=(int(height/scale_factor), width), fit_type='cover')
     return image
 
-def ascii_scaled_dims(height, width):
+def ascii_scaled_dims(height, width, params=None):
     """
     Takes in dimensions and scales it to account for character aspect ratio.
     Returns the dimensions.
     """
-    return (int(height/1.1), width)
+    scale_factor = 14/12
+    if not params is None:
+        font, font_scale, thickness, char_spacing, line_spacing = params
+        scale_factor = line_spacing/char_spacing
+    return (int(height/scale_factor), width)
 
-def oversaturate(image):
+def oversaturate(image, amt=None):
     """
-    Takes in an image and sets the saturation to max.
+    Takes in an image and adds {amt} to saturation.
+        If amt is None, saturation of all pixels is set to max.
     Returns the image.
     """
     hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    hsv_image[:, :, 1] = 255
+    if amt is None:
+        hsv_image[:, :, 1] = 255
+    else:
+        hsv_image[:, :, 1] = np.clip(hsv_image[:, :, 1].astype(int) + amt, 0, 255).astype(np.uint8) # avoids overflow
     image = cv2.cvtColor(hsv_image, cv2.COLOR_HSV2BGR)
     return image
 
@@ -80,8 +94,7 @@ def brighten(image, amt=None):
     if amt is None:
         hsv_image[:, :, 2] = 255
     else:
-        hsv_image[:, :, 2]+=amt
-        np.clip(hsv_image[:, :, 2], 0, 255)
+        hsv_image[:, :, 2] = np.clip(hsv_image[:, :, 2].astype(int) + amt, 0, 255).astype(np.uint8) # avoids overflow
     image = cv2.cvtColor(hsv_image, cv2.COLOR_HSV2BGR)
     return image
 
