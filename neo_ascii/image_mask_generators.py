@@ -132,7 +132,7 @@ def generate_pulsing_mask(image_dims=None, image = None, image_path=None, densit
     return final_mask
     
 
-def generate_threshold_mask(image=None, image_path=None, format='hsv', include=[(0, 100), (80, 20), (50, 100)], activation='const', output_path=None):
+def generate_threshold_mask(image=None, image_path=None, format='hsv', include=[(0, 180), (0, 255), (0, 255)], activation='const', output_path=None):
     """
     Generates a threshold mask for a given image or image path.
         Pixels must conform to one of 3 criteria to remain.
@@ -175,7 +175,7 @@ def generate_threshold_mask(image=None, image_path=None, format='hsv', include=[
     return mask
     
 
-def generate_color_mask(image=None, image_path=None, format='rgb', map=[(0,255,0), (0,0,255), (255,255,0)], output_path=None):
+def generate_color_mask(image=None, image_path=None, format='rgb', map=[(255, 0, 0), (0, 255, 0), (0, 0, 255)], output_path=None):
     """
     Generates a color shifted image for a given image or image path.
     format is the format of the shift map.
