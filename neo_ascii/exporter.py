@@ -34,13 +34,15 @@ def image_to_image(input_path, output_path, pipeline, ascii_mask, effect_mask):
 def image_to_video(input_path, output_path, pipeline, ascii_mask, effect_mask, duration=0.05):
     """
     pipeline is expected to be a function with params (image, ascii_mask, effect_mask).
-    ascii_mask is expected to be a single mask (2D).
+    ascii_mask is expected to be a single mask (2D) or series of masks (3D).
     effect_mask is expected to be a series of masks (3D).
+    Note: if ascii_mask and effect_mask are both a series of masks, it is preferred they have the same dimensions.
     """
     image = cv2.imread(str(input_path))
     frames = []
-    for single_effect_mask in effect_mask:
-        output = pipeline(image, ascii_mask, single_effect_mask)
+    for idx, single_effect_mask in enumerate(effect_mask):
+        ascii_frame = ascii_mask[idx%len(ascii_mask)] if len(ascii_mask.shape) > 2 else ascii_mask
+        output = pipeline(image, ascii_frame, single_effect_mask)
         frames.append(output)
 
     ext = extension_type(output_path)
@@ -62,7 +64,7 @@ def image_to_video(input_path, output_path, pipeline, ascii_mask, effect_mask, d
 def video_to_video(input_path, output_path, pipeline, ascii_mask, effect_mask, duration=0.05):
     """
     pipeline is expected to be a function with params (image, ascii_mask, effect_mask).
-    ascii_mask is expected to be a single mask (2D).
+    ascii_mask is expected to be a single mask (2D) or series of masks (3D).
     effect_mask is expected to be a series of masks (3D).
     """
     cap = cv2.VideoCapture(str(input_path))
@@ -76,7 +78,7 @@ def video_to_video(input_path, output_path, pipeline, ascii_mask, effect_mask, d
             break
 
         effect = effect_mask[frame_idx%len(effect_mask)] if effect_mask is not None else None
-        ascii = ascii_mask
+        ascii = ascii_mask[frame_idx%len(ascii_mask)] if len(ascii_mask.shape) > 2 else ascii_mask
 
         output = pipeline(frame, ascii, effect)
         frames.append(output)

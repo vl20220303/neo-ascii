@@ -7,6 +7,7 @@ from neo_ascii.image_mask_generators import (
     generate_ascii_mask,
     generate_rain_mask,
     generate_pulsing_mask,
+    generate_static_phrase_mask,
     generate_threshold_mask,
     generate_color_mask
 )
@@ -25,7 +26,7 @@ output_path = dir_path / 'output.mp4'
 
 def main():
 
-    ascii_mask = generate_ascii_mask(image_dims=ascii_scaled_dims(dimensions[0], dimensions[1]), chars=[i for i in 'badapple'])
+    ascii_mask = generate_static_phrase_mask(image_dims=ascii_scaled_dims(dimensions[0], dimensions[1]), phrases=['badapple'])
     effect_mask = generate_rain_mask(image_dims=ascii_scaled_dims(dimensions[0], dimensions[1]), density=1.3)
 
     if extension_type(input_path) in {'.jpg', '.png', '.jpeg'}:
