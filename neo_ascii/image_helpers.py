@@ -98,6 +98,22 @@ def brighten(image, amt=None):
     image = cv2.cvtColor(hsv_image, cv2.COLOR_HSV2BGR)
     return image
 
+def increase_contrast(image, amt=None, pivot=None):
+    """
+    Takes in an image and scales the difference between each pixel color and the pivot by {amt}.
+        If amt is None, no change occurs.
+        If pivot is None, average value of the pixels is used.
+    Returns the image.
+    """
+    if amt is None:
+        return image
+    img = image.astype(np.float32)
+    if pivot is None:
+        pivot = np.mean(img, axis=(0, 1), keepdims=True)
+    img = (img - pivot) * amt + pivot
+    img = np.clip(img, 0, 255).astype(np.uint8)
+    return img
+
 def greyscale(image):
     """
     Takes in an image and returns the greyscaled version.

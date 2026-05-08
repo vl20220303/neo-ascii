@@ -19,7 +19,7 @@ dir_path = Path(os.path.dirname(os.path.abspath(__file__)))
 
 dimensions = (60, 120)
 input_path = dir_path / 'input.gif'
-output_path = dir_path / 'output.mp4'
+output_path = dir_path / 'output.gif'
 
 def main():
 
@@ -37,7 +37,7 @@ def pipeline(image, ascii_mask, effect_mask):
     image = scale_image(image=image, new_size=dimensions)
     image = ascii_scaled(image)
     activation_mask = greyscale(generate_color_mask(image=image, map=[(255, 255, 255), (255, 255, 255), (255, 255, 255)]))
-    color_mask = generate_color_mask(image=oversaturate(brighten(image, 130), 30), map=[(255, 0, 0), (0, 255, 0), (0, 0, 255)])
+    color_mask = generate_color_mask(image=oversaturate(brighten(image, 100), 50), map=[(255, 0, 0), (0, 255, 0), (0, 0, 255)])
     return assemble_masks(color_mask=color_mask, activation_mask=activation_mask, use_ascii_activation="default")
 
 if __name__ == '__main__':

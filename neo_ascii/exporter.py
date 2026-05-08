@@ -41,7 +41,7 @@ def image_to_video(input_path, output_path, pipeline, ascii_mask, effect_mask, d
     image = cv2.imread(str(input_path))
     frames = []
     for idx, single_effect_mask in enumerate(effect_mask):
-        ascii_frame = ascii_mask[idx%len(ascii_mask)] if len(ascii_mask.shape) > 2 else ascii_mask
+        ascii_frame = ascii_mask[idx%len(ascii_mask)] if ascii_mask is not None and len(ascii_mask.shape) > 2 else ascii_mask
         output = pipeline(image, ascii_frame, single_effect_mask)
         frames.append(output)
 
@@ -78,7 +78,7 @@ def video_to_video(input_path, output_path, pipeline, ascii_mask, effect_mask, d
             break
 
         effect = effect_mask[frame_idx%len(effect_mask)] if effect_mask is not None else None
-        ascii = ascii_mask[frame_idx%len(ascii_mask)] if len(ascii_mask.shape) > 2 else ascii_mask
+        ascii = ascii_mask[frame_idx%len(ascii_mask)] if ascii_mask is not None and len(ascii_mask.shape) > 2 else ascii_mask
 
         output = pipeline(frame, ascii, effect)
         frames.append(output)
