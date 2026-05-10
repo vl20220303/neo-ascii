@@ -1,19 +1,18 @@
 import os
 from pathlib import Path
 
-from neo_ascii.image_mask_generators import (
-    generate_ascii_mask,
-    generate_rain_mask,
-    generate_pulsing_mask,
-    generate_threshold_mask,
-    generate_color_mask
+from neo_ascii.transforms import (
+    map,
+    brighten, 
+    greyscale
 )
-from neo_ascii.image_scaler import scale_image
-from neo_ascii.image_helpers import ascii_scaled_dims, mask_to_image, ascii_scaled, oversaturate, brighten, greyscale
-from neo_ascii.image_helpers import extension_type
 
-from neo_ascii.image_assembler import assemble_masks
-from neo_ascii.exporter import image_to_image, image_to_video, video_to_video
+from neo_ascii.scaler import scale
+from neo_ascii.utils import ascii_scaled
+from neo_ascii.utils import extension_type
+
+from neo_ascii.assembler import assemble
+from neo_ascii.exporter import image_to_image, video_to_video
 
 dir_path = Path(os.path.dirname(os.path.abspath(__file__)))
 
@@ -22,9 +21,6 @@ input_path = dir_path / 'input.png'
 output_path = dir_path / 'output.png'
 
 def main():
-
-    ascii_mask = generate_ascii_mask(image_dims=ascii_scaled_dims(dimensions[0], dimensions[1]))
-
     if extension_type(input_path) in {'.jpg', '.png', '.jpeg'}:
         image_to_image(input_path, output_path, pipeline=pipeline, ascii_mask=None, effect_mask=None)
 
@@ -33,12 +29,12 @@ def main():
     
 
 def pipeline(image, ascii_mask, effect_mask):
-    image = scale_image(image=image, new_size=dimensions)
+    image = scale(image=image, new_size=dimensions)
     image = ascii_scaled(image)
     activation_mask = greyscale(image)
-    color_mask = generate_color_mask(image=brighten(image), map=[(255, 0, 0), (0, 255, 0), (0, 0, 255)])
+    color_mask = map(image=brighten(image), map=[(255, 0, 0), (0, 255, 0), (0, 0, 255)])
     activation_color = (255, 200, 100)
-    return assemble_masks(color_mask=color_mask, activation_mask=activation_mask, use_ascii_activation="block", activation_color=activation_color)
+    return assemble(color_mask=color_mask, activation_mask=activation_mask, use_ascii_activation="block", activation_color=activation_color)
 
 if __name__ == '__main__':
     main()

@@ -3,20 +3,16 @@ from pathlib import Path
 
 import numpy as np
 
-from neo_ascii.image_mask_generators import (
-    generate_ascii_mask,
-    generate_rain_mask,
-    generate_pulsing_mask,
-    generate_static_phrase_mask,
-    generate_threshold_mask,
-    generate_color_mask
-)
-from neo_ascii.image_scaler import scale_image
-from neo_ascii.image_helpers import ascii_scaled_dims, mask_to_image, ascii_scaled, oversaturate, brighten, greyscale
-from neo_ascii.image_helpers import extension_type
+from neo_ascii.ascii_masks import generate_static_phrase_mask
+from neo_ascii.effects import generate_rain_mask
+from neo_ascii.transforms import filter, greyscale
 
-from neo_ascii.image_assembler import assemble_masks
-from neo_ascii.exporter import image_to_image, image_to_video, video_to_video
+from neo_ascii.scaler import scale
+from neo_ascii.utils import ascii_scaled_dims, ascii_scaled
+from neo_ascii.utils import extension_type
+
+from neo_ascii.assembler import assemble
+from neo_ascii.exporter import image_to_image, video_to_video
 
 dir_path = Path(os.path.dirname(os.path.abspath(__file__)))
 
@@ -37,11 +33,11 @@ def main():
     
 
 def pipeline(image, ascii_mask, effect_mask):
-    image = scale_image(image=image, new_size=dimensions, crop_offset=0.12)
+    image = scale(image=image, new_size=dimensions, crop_offset=0.12)
     image = ascii_scaled(image)
-    activation_mask = np.clip(generate_threshold_mask(image=image, include=[(0, 180), (0, 255), (100, 255)]) + effect_mask*0.1, 0, 1)
+    activation_mask = np.clip(filter(image=image, include=[(0, 180), (0, 255), (100, 255)]) + effect_mask*0.1, 0, 1)
     effect_mask = np.clip(effect_mask + greyscale(image)*0.5, 0, 1)
-    return assemble_masks(ascii_mask=ascii_mask, effect_mask=effect_mask, activation_mask=activation_mask)
+    return assemble(ascii_mask=ascii_mask, effect_mask=effect_mask, activation_mask=activation_mask)
 
 if __name__ == '__main__':
     main()

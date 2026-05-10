@@ -2,7 +2,7 @@ import os
 import numpy as np
 import cv2
 
-from neo_ascii.image_scaler import scale_image
+from neo_ascii.scaler import scale
 
 def get_dims(image_dims, image, image_path):
     dims = ()
@@ -56,7 +56,7 @@ def ascii_scaled(image, params=None):
         font, font_scale, thickness, char_spacing, line_spacing = params
         scale_factor = line_spacing/char_spacing
     
-    image = scale_image(image=image, new_size=(int(height/scale_factor), width), fit_type='cover')
+    image = scale(image=image, new_size=(int(height/scale_factor), width), fit_type='cover')
     return image
 
 def ascii_scaled_dims(height, width, params=None):
@@ -69,56 +69,6 @@ def ascii_scaled_dims(height, width, params=None):
         font, font_scale, thickness, char_spacing, line_spacing = params
         scale_factor = line_spacing/char_spacing
     return (int(height/scale_factor), width)
-
-def oversaturate(image, amt=None):
-    """
-    Takes in an image and adds {amt} to saturation.
-        If amt is None, saturation of all pixels is set to max.
-    Returns the image.
-    """
-    hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    if amt is None:
-        hsv_image[:, :, 1] = 255
-    else:
-        hsv_image[:, :, 1] = np.clip(hsv_image[:, :, 1].astype(int) + amt, 0, 255).astype(np.uint8) # avoids overflow
-    image = cv2.cvtColor(hsv_image, cv2.COLOR_HSV2BGR)
-    return image
-
-def brighten(image, amt=None):
-    """
-    Takes in an image and adds {amt} to brightness.
-        If amt is None, brightness of all pixels is set to max.
-    Returns the image.
-    """
-    hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    if amt is None:
-        hsv_image[:, :, 2] = 255
-    else:
-        hsv_image[:, :, 2] = np.clip(hsv_image[:, :, 2].astype(int) + amt, 0, 255).astype(np.uint8) # avoids overflow
-    image = cv2.cvtColor(hsv_image, cv2.COLOR_HSV2BGR)
-    return image
-
-def increase_contrast(image, amt=None, pivot=None):
-    """
-    Takes in an image and scales the difference between each pixel color and the pivot by {amt}.
-        If amt is None, no change occurs.
-        If pivot is None, average value of the pixels is used.
-    Returns the image.
-    """
-    if amt is None:
-        return image
-    img = image.astype(np.float32)
-    if pivot is None:
-        pivot = np.mean(img, axis=(0, 1), keepdims=True)
-    img = (img - pivot) * amt + pivot
-    img = np.clip(img, 0, 255).astype(np.uint8)
-    return img
-
-def greyscale(image):
-    """
-    Takes in an image and returns the greyscaled version.
-    """
-    return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY).astype(float) / 255
 
 def extension_type(filepath):
     """

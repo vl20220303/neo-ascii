@@ -1,19 +1,7 @@
 import cv2
 import numpy as np
-import os
-from pathlib import Path
 
-from neo_ascii.image_mask_generators import (
-    generate_ascii_mask,
-    generate_rain_mask,
-    generate_pulsing_mask,
-    generate_threshold_mask,
-    generate_color_mask
-)
-from neo_ascii.image_scaler import scale_image
-from neo_ascii.image_helpers import mask_to_image, ascii_scaled, oversaturate, brighten
-
-def assemble_masks(ascii_mask=None, color_mask=None, effect_mask=None, activation_mask=None, output_path=None, params=None, use_ascii_activation=None, activation_color=None):
+def assemble(ascii_mask=None, color_mask=None, effect_mask=None, activation_mask=None, output_path=None, params=None, use_ascii_activation=None, activation_color=None):
     """
     ascii_mask is expected to be a single mask (2D).
         If None is provided, brightness characters are used (if provided).

@@ -3,7 +3,7 @@ import numpy as np
 import os
 from pathlib import Path
 
-def scale_image(image=None, image_path=None, new_size=(100, 100), fit_type='crop', crop_offset=0, output_path=None, gen_output_path = True):
+def scale(image=None, image_path=None, new_size=(100, 100), fit_type='crop', crop_offset=0, output_path=None, gen_output_path = True):
     """
     Generates a scaled image for a given image or image path.
     new_size is the new dimensions of the image.

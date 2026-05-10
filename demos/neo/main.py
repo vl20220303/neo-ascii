@@ -3,17 +3,15 @@ from pathlib import Path
 
 import numpy as np
 
-from neo_ascii.image_mask_generators import (
-    generate_ascii_mask,
-    generate_pulsing_mask,
-    generate_rain_mask,
-    generate_color_mask
-)
-from neo_ascii.image_scaler import scale_image
-from neo_ascii.image_helpers import ascii_scaled_dims, ascii_scaled, greyscale, mask_to_image
-from neo_ascii.image_helpers import extension_type
+from neo_ascii.ascii_masks import generate_ascii_mask
+from neo_ascii.effects import generate_pulsing_mask, generate_rain_mask
+from neo_ascii.transforms import map, greyscale
 
-from neo_ascii.image_assembler import assemble_masks
+from neo_ascii.scaler import scale
+from neo_ascii.utils import ascii_scaled_dims, ascii_scaled, mask_to_image
+from neo_ascii.utils import extension_type
+
+from neo_ascii.assembler import assemble
 from neo_ascii.exporter import image_to_video, video_to_video
 
 dir_path = Path(os.path.dirname(os.path.abspath(__file__)))
@@ -35,12 +33,12 @@ def main():
     
 
 def pipeline(image, ascii_mask, effect_mask):
-    image = scale_image(image=image, new_size=dimensions)
+    image = scale(image=image, new_size=dimensions)
     image = ascii_scaled(image)
     activation_mask = greyscale(image)
-    color_mask = generate_color_mask(image=mask_to_image(effect_mask), format='hsv', map=[(0,0,0), (0,0,0), (0,255,255)])
-    color_mask = generate_color_mask(image=color_mask, map=[(230,255,230), (-180,255,-180), (-180,255,-180)])
-    return assemble_masks(ascii_mask=ascii_mask, color_mask=color_mask, activation_mask=activation_mask, effect_mask=effect_mask)
+    color_mask = map(image=mask_to_image(effect_mask), format='hsv', map=[(0,0,0), (0,0,0), (0,255,255)])
+    color_mask = map(image=color_mask, map=[(230,255,230), (-180,255,-180), (-180,255,-180)])
+    return assemble(ascii_mask=ascii_mask, color_mask=color_mask, activation_mask=activation_mask, effect_mask=effect_mask)
 
 if __name__ == '__main__':
     main()
