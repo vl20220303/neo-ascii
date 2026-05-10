@@ -38,7 +38,7 @@ def assemble(ascii_mask=None, color_mask=None, effect_mask=None, activation_mask
     if not params is None:
         font, font_scale, thickness, char_spacing, line_spacing = params
 
-    for mask in [ascii_mask, color_mask, effect_mask, activation_mask]:
+    for mask in [ascii_mask, effect_mask, activation_mask]:
         if mask is not None:
             height, width = mask.shape[:2]
             break
