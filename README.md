@@ -1,4 +1,5 @@
 # About neo_ascii
+<img width="1080" height="1078" alt="image" src="https://github.com/user-attachments/assets/326b30c4-be9b-4f7f-8010-7a480ce74813" />
 `neo_ascii` is a modular library that supports many image effects and converts images, gifs, and videos into ASCII-style media.
 
 # Usage
