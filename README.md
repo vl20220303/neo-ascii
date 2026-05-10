@@ -1,7 +1,5 @@
 # About neo_ascii
-I initially started this project to overlay the code rain effect onto Agent Smith's face for a cool desktop background.
-
-Now, `neo_ascii` is a modular library that supports many image effects and converts images, gifs, and videos into ASCII-style media.
+`neo_ascii` is a modular library that supports many image effects and converts images, gifs, and videos into ASCII-style media.
 
 # Usage
 Typically, there are three main functional blocks involved with producing an image, GIF, or video with `neo_ascii`:
