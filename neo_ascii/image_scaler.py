@@ -58,18 +58,3 @@ def scale_image(image=None, image_path=None, new_size=(100, 100), fit_type='crop
         cv2.imwrite(output_path, image)
     
     return image
-
-
-def main():
-    dir_path = Path(os.path.dirname(os.path.abspath(__file__))) / 'tests/image_scaler_test'
-    input_path = dir_path / 'input.png'
-    output_path = dir_path / 'output.png'
-
-    scale_image(image_path=input_path, new_size=(300, 300), fit_type='crop', gen_output_path=True)
-    scale_image(image_path=input_path, new_size=(300, 300), fit_type='crop', crop_offset=0.5, gen_output_path=True)
-    scale_image(image_path=input_path, new_size=(300, 300), fit_type='contain', gen_output_path=True)
-    scale_image(image_path=input_path, new_size=(300, 300), fit_type='cover', gen_output_path=True)
-    scale_image(image_path=input_path, new_size=(300, 500), fit_type='contain', output_path=output_path)
-
-if __name__ == '__main__':
-    main()

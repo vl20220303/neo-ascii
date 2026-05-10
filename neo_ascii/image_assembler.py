@@ -105,30 +105,3 @@ def assemble_masks(ascii_mask=None, color_mask=None, effect_mask=None, activatio
         cv2.imwrite(output_path, canvas)
     
     return canvas
-
-def main():
-    dir_path = Path(os.path.dirname(os.path.abspath(__file__))) / 'tests/image_assembler_test'
-    input_path = dir_path / 'input.png'
-    output_path = dir_path / 'output.png'
-    demo_pipeline(input_path, output_path, dir_path / 'debug')
-
-
-def demo_pipeline(input_path, output_path, debug_dir):
-    image = cv2.imread(input_path)
-    image = scale_image(image=image, new_size=(150, 150))
-    image = ascii_scaled(image)
-    ascii_mask = generate_ascii_mask(image=image)
-    effect_mask = generate_rain_mask(image=image, density=1)[0]
-    activation_mask = generate_threshold_mask(
-        image=image,
-        format="hsv",
-        include=[(0, 180), (10, 255), (50, 255)],
-        activation="linear",
-        output_path=debug_dir / 'activation.png'
-    )
-    color_mask = generate_color_mask(image=image, map=[(0,255,0), (0,255,0), (0,255,0)], output_path=debug_dir / 'color.png')
-    assemble_masks(ascii_mask=ascii_mask, color_mask=color_mask, effect_mask=effect_mask, output_path=output_path)
-
-
-if __name__ == '__main__':
-    main()
