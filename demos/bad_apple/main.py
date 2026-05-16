@@ -22,7 +22,7 @@ output_path = dir_path / 'output.mp4'
 
 def main():
 
-    ascii_mask = generate_static_phrase_mask(image_dims=ascii_scaled_dims(dimensions[0], dimensions[1]), phrases=['badapple'])
+    ascii_mask = generate_static_phrase_mask(image_dims=ascii_scaled_dims(dimensions[0], dimensions[1]), phrases=['badapple'], direction=2)
     effect_mask = generate_rain_mask(image_dims=ascii_scaled_dims(dimensions[0], dimensions[1]), density=1.3)
 
     if extension_type(input_path) in {'.jpg', '.png', '.jpeg'}:
